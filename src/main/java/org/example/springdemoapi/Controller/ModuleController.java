@@ -17,4 +17,10 @@ public class ModuleController {
     public String getHome(){
         return "i want to go home";
     }
+
+    @GetMapping("/get-calc")
+    public int getCalc(){
+        return 1 + 1;
+    }
+
 }
