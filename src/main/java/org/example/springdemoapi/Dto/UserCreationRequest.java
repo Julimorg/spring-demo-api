@@ -1,9 +1,17 @@
 package org.example.springdemoapi.Dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserCreationRequest {
+
+    @Size(min = 3, message = "USERNAME_INVALID")
     private String username;
+
+    @Size(min = 8, message = "USERPASSWORD_INVALID")
     private String password;
     private String firstName;
     private String lastName;

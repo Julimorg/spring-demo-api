@@ -3,6 +3,8 @@ package org.example.springdemoapi.Service;
 import org.example.springdemoapi.Dto.UserCreationRequest;
 import org.example.springdemoapi.Dto.UserUpdateRequest;
 import org.example.springdemoapi.Entity.User;
+import org.example.springdemoapi.Enum.ErrorCode.ErrorCode;
+import org.example.springdemoapi.Exception.AppException;
 import org.example.springdemoapi.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,11 @@ public class UserService {
 
         User user = new User();
 
+        //? Check user da ton tai hay chua
+        if(userRepository.existsByUsername(request.getUsername()))
+            throw new AppException(ErrorCode.USER_EXISTED);
+
+
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
         user.setFirstName(request.getFirstName());
@@ -32,9 +39,6 @@ public class UserService {
     }
 
     public User getUserById(String id){
-        if(id == null){
-            throw new IllegalArgumentException("Id cannot be null");
-        }
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found") );
     }
 

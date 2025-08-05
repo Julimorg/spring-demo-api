@@ -1,6 +1,8 @@
 package org.example.springdemoapi.Controller;
 
 
+import jakarta.validation.Valid;
+import org.example.springdemoapi.Dto.ApiResponse;
 import org.example.springdemoapi.Dto.UserCreationRequest;
 import org.example.springdemoapi.Dto.UserUpdateRequest;
 import org.example.springdemoapi.Entity.User;
@@ -17,9 +19,10 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/create-user")
-    User createUser(@RequestBody  UserCreationRequest request){
-        return userService.createQuest(request);
-
+    ApiResponse<User> createUser(@RequestBody  @Valid UserCreationRequest request){
+        ApiResponse<User> apiResponse = new ApiResponse<>();
+        apiResponse.setData(userService.createQuest(request));
+        return apiResponse;
     }
 
     @GetMapping("/get-user")
@@ -36,6 +39,7 @@ public class UserController {
     User updateUserBydId(@PathVariable String userId, @RequestBody UserUpdateRequest request){
         return userService.updateUser(userId, request);
     }
+
     @DeleteMapping("/delete/{userId}")
     String deleteUserById(@PathVariable String userId){
         userService.deleteUser(userId);
