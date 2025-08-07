@@ -3,8 +3,9 @@ package org.example.springdemoapi.Controller;
 
 import jakarta.validation.Valid;
 import org.example.springdemoapi.Dto.ApiResponse;
-import org.example.springdemoapi.Dto.UserCreationRequest;
-import org.example.springdemoapi.Dto.UserUpdateRequest;
+import org.example.springdemoapi.Dto.Request.UserCreationRequest;
+import org.example.springdemoapi.Dto.Request.UserUpdateRequest;
+import org.example.springdemoapi.Dto.Response.ResGetUser;
 import org.example.springdemoapi.Entity.User;
 import org.example.springdemoapi.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +27,19 @@ public class UserController {
     }
 
     @GetMapping("/get-user")
-    List<User> getUser(){
-        return userService.getUser();
+    ApiResponse<List<User>> getUser(){
+        ApiResponse<List<User>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(userService.getUser());
+        return apiResponse;
     }
 
     @GetMapping("/{userId}")
-    User getUserById(@PathVariable("userId") String userId){
+    ResGetUser getUserById(@PathVariable("userId") String userId){
         return userService.getUserById(userId);
     }
 
     @PutMapping("/edit/{userId}")
-    User updateUserBydId(@PathVariable String userId, @RequestBody UserUpdateRequest request){
+    ResGetUser updateUserBydId(@PathVariable String userId, @RequestBody UserUpdateRequest request){
         return userService.updateUser(userId, request);
     }
 
