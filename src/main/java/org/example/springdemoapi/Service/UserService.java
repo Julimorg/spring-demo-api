@@ -10,6 +10,8 @@ import org.example.springdemoapi.Exception.AppException;
 import org.example.springdemoapi.Mapper.UserMapper;
 import org.example.springdemoapi.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,6 +35,9 @@ public class UserService {
 
         //? Sử dụng Mapper để làm nhanh thao tác response hơn
         User user = userMapper.toUser(request);
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         //? Cách sử dụng thuần túy get đơn giản để trả về repsonse
 //        user.setUsername(request.getUsername());
