@@ -6,6 +6,7 @@ import org.example.springdemoapi.Dto.Request.UserUpdateRequest;
 import org.example.springdemoapi.Dto.Response.ResGetUser;
 import org.example.springdemoapi.Entity.User;
 import org.example.springdemoapi.Enum.ErrorCode.ErrorCode;
+import org.example.springdemoapi.Enum.Role.UserRole;
 import org.example.springdemoapi.Exception.AppException;
 import org.example.springdemoapi.Mapper.UserMapper;
 import org.example.springdemoapi.Repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -24,6 +26,10 @@ public class UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     public User createQuest(UserCreationRequest request){
 
@@ -36,8 +42,15 @@ public class UserService {
         //? Sử dụng Mapper để làm nhanh thao tác response hơn
         User user = userMapper.toUser(request);
 
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+
+        //? Config role for user
+        HashSet<String> roles = new HashSet<>();
+        roles.add(UserRole.USER.name());
+        user.setRoles(roles);
+
 
         //? Cách sử dụng thuần túy get đơn giản để trả về repsonse
 //        user.setUsername(request.getUsername());

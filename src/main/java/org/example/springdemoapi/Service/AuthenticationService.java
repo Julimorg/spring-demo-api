@@ -12,17 +12,20 @@ import org.example.springdemoapi.Dto.Request.AuthenticationRequest;
 import org.example.springdemoapi.Dto.Request.IntrospectRequest;
 import org.example.springdemoapi.Dto.Response.AuthenticationResponse;
 import org.example.springdemoapi.Dto.Response.IntrospectResponse;
+import org.example.springdemoapi.Entity.User;
 import org.example.springdemoapi.Enum.ErrorCode.ErrorCode;
 import org.example.springdemoapi.Exception.AppException;
 import org.example.springdemoapi.Repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Slf4j
 @Service
@@ -64,7 +67,7 @@ public class AuthenticationService {
          if(!authenticate)
              throw  new AppException(ErrorCode.UNAUTHENTICAED);
 
-         var token = generateToken(request.getUsername());
+         var token = generateToken(user);
 
          return AuthenticationResponse.builder()
                  .token(token)
@@ -74,18 +77,18 @@ public class AuthenticationService {
     }
 
 
-    private String generateToken(String username){
+    private String generateToken(User user){
 
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet jwtClaimSet = new JWTClaimsSet.Builder()
-                .subject(username) // --> dai dien cho user dang nhap
+                .subject(user.getUsername()) // --> dai dien cho user dang nhap
                 .issuer("devteria.com") // --> dinh danh token
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS ).toEpochMilli()
                 ))
-                .claim("customClaim", "Custom")
+                .claim("scope", buildScope(user))
                 .build();
 
         Payload payload = new Payload(jwtClaimSet.toJSONObject());
@@ -101,5 +104,12 @@ public class AuthenticationService {
             throw new RuntimeException(e);
         }
 
+    }
+    private String buildScope(User user){
+        StringJoiner stringJoiner = new StringJoiner(" ");
+        if(!CollectionUtils.isEmpty(user.getRoles()))
+            user.getRoles().forEach(s -> stringJoiner.add(s));
+
+        return stringJoiner.toString();
     }
 }
