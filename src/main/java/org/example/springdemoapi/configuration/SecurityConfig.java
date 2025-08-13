@@ -4,6 +4,7 @@ import lombok.experimental.NonFinal;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,6 +22,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
     private final String[] PUBLIC_POST_ENDPOINTS = {"/users/create-users", "/auth/log-in"};
     private final String[] PUBLIC_GET_ENPOINTS = {"/users/get-user"};
@@ -37,7 +39,7 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
                         //? nhưng endpoit phải có scope cụ thể như là admin thì mới được get
-                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENPOINTS).hasAuthority("ROLE_ADMIN")
+//                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENPOINTS).hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated());
 
         //? Config OAuth2

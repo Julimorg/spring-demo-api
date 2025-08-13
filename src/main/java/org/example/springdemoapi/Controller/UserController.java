@@ -10,6 +10,8 @@ import org.example.springdemoapi.Dto.Response.ResGetUser;
 import org.example.springdemoapi.Entity.User;
 import org.example.springdemoapi.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +34,8 @@ public class UserController {
     @GetMapping("/get-user")
     ApiResponse<List<User>> getUser(){
 
+
+
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         log.info("Username: {}", authentication.getName());
@@ -44,6 +48,7 @@ public class UserController {
         return apiResponse;
     }
 
+//    @PostAuthorize("")
     @GetMapping("/{userId}")
     ResGetUser getUserById(@PathVariable("userId") String userId){
         return userService.getUserById(userId);
