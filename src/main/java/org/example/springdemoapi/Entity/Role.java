@@ -3,28 +3,24 @@ package org.example.springdemoapi.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
-@Table(name = "users")
-public class User {
+public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    private String username;
-    private String password;
-    private String firstName;
-    private String lastName;
-    private LocalDate dob;
+    private String name;
+    private String description;
 
     @ManyToMany
-    private Set<Role> roles;
+    Set<Permission> permissions;
+
+
 
 }

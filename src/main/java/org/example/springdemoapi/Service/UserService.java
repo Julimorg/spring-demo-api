@@ -53,7 +53,7 @@ public class UserService {
         //? Config role for user
         HashSet<String> roles = new HashSet<>();
         roles.add(UserRole.USER.name());
-        user.setRoles(roles);
+//        user.setRoles(roles);
 
 
         //? Cách sử dụng thuần túy get đơn giản để trả về repsonse
