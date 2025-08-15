@@ -55,8 +55,10 @@ public class UserController {
     }
 
     @PutMapping("/edit/{userId}")
-    ResGetUser updateUserBydId(@PathVariable String userId, @RequestBody UserUpdateRequest request){
-        return userService.updateUser(userId, request);
+    ApiResponse<ResGetUser> updateUserBydId(@PathVariable String userId, @RequestBody UserUpdateRequest request){
+        return ApiResponse.<ResGetUser>builder()
+                .data(userService.updateUser(userId, request))
+                .build();
     }
 
     @DeleteMapping("/delete/{userId}")

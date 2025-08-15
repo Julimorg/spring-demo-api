@@ -17,6 +17,7 @@ public interface UserMapper {
     @Mapping(target = "lastName", ignore = true) // --> ignore value trong targer
     ResGetUser toGetUser(User user);
 
+    @Mapping(target = "roles", ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 
 }

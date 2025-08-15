@@ -10,6 +10,7 @@ import org.example.springdemoapi.Enum.ErrorCode.ErrorCode;
 import org.example.springdemoapi.Enum.Role.UserRole;
 import org.example.springdemoapi.Exception.AppException;
 import org.example.springdemoapi.Mapper.UserMapper;
+import org.example.springdemoapi.Repository.RoleRespository;
 import org.example.springdemoapi.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PostAuthorize;
@@ -29,10 +30,13 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private final RoleRespository roleRespository;
 
 
     public User createQuest(UserCreationRequest request){
@@ -66,7 +70,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public List<User> getUser(){
         log.info("in method get user");
         return userRepository.findAll();
@@ -79,13 +83,15 @@ public class UserService {
 
     public ResGetUser updateUser(String userId, UserUpdateRequest request){
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
         userMapper.updateUser(user, request);
 
-//        user.setUsername(request.getUsername());
-//        user.setFirstName(request.getFirstName());
-//        user.setLastName(request.getLastName());
-//        user.setDob(request.getDob());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        var roles = roleRespository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
 
         return userMapper.toGetUser(userRepository.save(user));
     }

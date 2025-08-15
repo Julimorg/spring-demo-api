@@ -1,21 +1,21 @@
-package org.example.springdemoapi.Dto.Request;
+package org.example.springdemoapi.Dto.Response;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.List;
-
+import java.util.Set;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserUpdateRequest {
+public class UserUpdateResponse {
      String username;
      String password;
      String firstName;
      String lastName;
      LocalDate dob;
-     List<String> roles;
+     Set<String> roles;
 }

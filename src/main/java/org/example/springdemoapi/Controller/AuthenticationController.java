@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.springdemoapi.Dto.ApiResponse;
 import org.example.springdemoapi.Dto.Request.AuthenticationRequest;
 import org.example.springdemoapi.Dto.Request.IntrospectRequest;
+import org.example.springdemoapi.Dto.Request.LogOutRequest;
 import org.example.springdemoapi.Dto.Response.AuthenticationResponse;
 import org.example.springdemoapi.Dto.Response.IntrospectResponse;
 import org.example.springdemoapi.Service.AuthenticationService;
@@ -37,6 +38,13 @@ public class AuthenticationController {
 
         return ApiResponse.<IntrospectResponse>builder()
                 .data(result)
+                .build();
+    }
+
+    @PostMapping("/log-out")
+    ApiResponse<Void> logout(@RequestBody LogOutRequest request) throws ParseException, JOSEException{
+        authenticationService.logOut(request);
+        return ApiResponse.<Void>builder()
                 .build();
     }
 }

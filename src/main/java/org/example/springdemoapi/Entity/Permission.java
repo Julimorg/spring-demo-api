@@ -15,8 +15,8 @@ import lombok.*;
 @Entity
 public class Permission {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+//    @GeneratedValue(strategy = GenerationType.UUID)
+//    private String id;
     private String name;
     private String description;
 }

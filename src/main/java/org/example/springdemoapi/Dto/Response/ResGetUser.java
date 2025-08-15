@@ -2,6 +2,7 @@ package org.example.springdemoapi.Dto.Response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.example.springdemoapi.Entity.Role;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -17,5 +18,5 @@ public class ResGetUser {
      String firstName;
      String lastName;
      LocalDate dob;
-     Set<String> role;
+     Set<RoleResponse> roles;
 }
