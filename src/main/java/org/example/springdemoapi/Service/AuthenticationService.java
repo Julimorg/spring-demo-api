@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.springdemoapi.Dto.Request.AuthenticationRequest;
 import org.example.springdemoapi.Dto.Request.IntrospectRequest;
 import org.example.springdemoapi.Dto.Request.LogOutRequest;
+import org.example.springdemoapi.Dto.Request.RefreshRequest;
 import org.example.springdemoapi.Dto.Response.AuthenticationResponse;
 import org.example.springdemoapi.Dto.Response.IntrospectResponse;
 import org.example.springdemoapi.Entity.InvalidatedToken;
@@ -19,6 +20,7 @@ import org.example.springdemoapi.Enum.ErrorCode.ErrorCode;
 import org.example.springdemoapi.Exception.AppException;
 import org.example.springdemoapi.Repository.InvalidatedTokenRepository;
 import org.example.springdemoapi.Repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,14 @@ public class AuthenticationService {
     private final InvalidatedTokenRepository InvalidatedTokenRepository;
 
     @NonFinal
+    @Value("${expiry.date}")
+    protected long EXPIRY_DATE;
+
+    @NonFinal
+    @Value("${refreshduration}")
+    protected long REFRESH_DURATION;
+
+    @NonFinal
     protected  static final String SIGNER_KEY = "7aW5J8WZ0ck0TEg+OnxjCfK8dBqTkOjcKEEVM1UWufP3XZNfXTIcF/CBL+DyYJ52";
     private final InvalidatedTokenRepository invalidatedTokenRepository;
 
@@ -47,12 +57,9 @@ public class AuthenticationService {
     //? Check verify Token
     public IntrospectResponse introspect(IntrospectRequest request) throws ParseException, JOSEException {
         var token = request.getToken();
-
-        verifyToken(token);
-
         boolean isValid = true;
         try {
-            verifyToken(token);
+            verifyToken(token, false);
             isValid = false;
         }
         catch(AppException e){
@@ -97,7 +104,7 @@ public class AuthenticationService {
                 .issuer("devteria.com") // --> dinh danh token
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS ).toEpochMilli()
+                        Instant.now().plus(EXPIRY_DATE, ChronoUnit.SECONDS ).toEpochMilli()
                 ))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
@@ -132,13 +139,15 @@ public class AuthenticationService {
         return stringJoiner.toString();
     }
 
-    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+    private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
 
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expiryTime = (isRefresh)
+                ? new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(REFRESH_DURATION, ChronoUnit.SECONDS).toEpochMilli())
+                : signedJWT.getJWTClaimsSet().getExpirationTime();
 
         var verified = signedJWT.verify(verifier);
 
@@ -152,13 +161,13 @@ public class AuthenticationService {
 
         return signedJWT;
     }
+    public AuthenticationResponse refreshToken(RefreshRequest request ) throws ParseException, JOSEException {
+            var signedJWT = verifyToken(request.getToken(), true);
 
-    public void logOut(LogOutRequest request) throws ParseException, JOSEException {
-        var signToken = verifyToken(request.getToken());
+            var jit = signedJWT.getJWTClaimsSet().getJWTID();
 
-        String jit = signToken.getJWTClaimsSet().getJWTID();
+            var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-        Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
 
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                 .id(jit)
@@ -166,5 +175,34 @@ public class AuthenticationService {
                 .build();
 
         invalidatedTokenRepository.save(invalidatedToken);
+
+        var username = signedJWT.getJWTClaimsSet().getSubject();
+
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        var token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
+    }
+
+    public void logOut(LogOutRequest request) throws ParseException, JOSEException {
+        try {
+            var signToken = verifyToken(request.getToken(), true);
+            String jit = signToken.getJWTClaimsSet().getJWTID();
+
+            Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .id(jit)
+                    .expiryDate(expiryTime)
+                    .build();
+
+            invalidatedTokenRepository.save(invalidatedToken);
+        }catch (AppException e){
+            log.error("Token already expired");
+        }
     }
 }

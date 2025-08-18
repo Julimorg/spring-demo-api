@@ -6,6 +6,7 @@ import org.example.springdemoapi.Dto.ApiResponse;
 import org.example.springdemoapi.Dto.Request.AuthenticationRequest;
 import org.example.springdemoapi.Dto.Request.IntrospectRequest;
 import org.example.springdemoapi.Dto.Request.LogOutRequest;
+import org.example.springdemoapi.Dto.Request.RefreshRequest;
 import org.example.springdemoapi.Dto.Response.AuthenticationResponse;
 import org.example.springdemoapi.Dto.Response.IntrospectResponse;
 import org.example.springdemoapi.Service.AuthenticationService;
@@ -37,6 +38,15 @@ public class AuthenticationController {
         var result = authenticationService.introspect(request);
 
         return ApiResponse.<IntrospectResponse>builder()
+                .data(result)
+                .build();
+    }
+
+    @PostMapping("/refresh-token")
+    ApiResponse<AuthenticationResponse> checkVerifyToken(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+        var result = authenticationService.refreshToken(request);
+
+        return ApiResponse.<AuthenticationResponse>builder()
                 .data(result)
                 .build();
     }
